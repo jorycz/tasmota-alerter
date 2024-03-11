@@ -4,8 +4,8 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=nobody
-Group=nobody
+User=root
+Group=root
 Type=simple
 TimeoutStartSec=1
 Restart=on-failure
