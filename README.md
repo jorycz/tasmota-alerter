@@ -1,5 +1,7 @@
 # tasmota-alerter
 Simple alerting daemon designed to work with [Tasmota powered](https://tasmota.github.io/docs/) smart plugs. Inspired (mainly MQTT part) by [tasmota-exporter](https://github.com/dyrkin/tasmota-exporter?tab=readme-ov-file) for Prometheus.
+* State of application (already fired alerts) is saved when you need to restart or stop [tasmota-alerter](https://github.com/jorycz/tasmota-alerter), so no alerts should be fired twice. 
+* Monitoring rules can be reloaded (if changed) by `kill -HUP $(pidof tasmota-alerter)` if [tasmota-alerter](https://github.com/jorycz/tasmota-alerter) is already running.
 
 # Prerequisites
 You need to install [Go](https://go.dev) to compile daemon and [Mosquitto](https://mosquitto.org) where Tasmota devices sending updates using MQTT. Also open SMTP service on **localhost:25** for e-mail notification.
