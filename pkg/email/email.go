@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-func SendMessageTo(r string, body string) {
+func SendMessage(smtpDestination, recpts, body string) {
 
-	recipients := strings.Split(r, ",")
+	recipients := strings.Split(recpts, ",")
 
 	if len(recipients) > 0 {
 
@@ -16,7 +16,7 @@ func SendMessageTo(r string, body string) {
 		subject := "Tasmota Alert"
 
 		for _, to := range recipients {
-			slog.Debug("Sending email.", "to", to, "subj", subject, "message", body)
+			slog.Debug("Sending email.", "server", smtpDestination, "to", to, "subj", subject, "message", body)
 
 			to = strings.TrimSpace(to)
 			message := []byte("To: " + to + "\r\n" +
@@ -24,7 +24,7 @@ func SendMessageTo(r string, body string) {
 				"\r\n" +
 				body + "\r\n")
 
-			err := smtp.SendMail("localhost:25", nil, from, []string{to}, message)
+			err := smtp.SendMail(smtpDestination, nil, from, []string{to}, message)
 			if err != nil {
 				slog.Error("Error sending e-mail.", err)
 			}

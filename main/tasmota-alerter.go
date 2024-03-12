@@ -23,7 +23,7 @@ func main() {
 		abort("Error connecting to MQTT broker, exiting ...", "error", err)
 	}
 
-	p := processor.NewProcessor(mqttClient, v.statusUpdateSeconds)
+	p := processor.NewProcessor(mqttClient, v.statusUpdateSeconds, v.smtpServer)
 	if err := p.Subscribe(v.mqttTopics); err != nil {
 		abort("Error subscribing topics, exiting ...", "error", err)
 	}

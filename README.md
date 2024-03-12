@@ -24,8 +24,10 @@ MQTT_CLIENT_ID:         #optional. Default is tasmota_alerter.
 MQTT_TOPICS:            #optional. Default is "tele/+/+, stat/+/+". If you are using deeper topics, you can set as "tele/#, stat/#".
 STATUS_UPDATE_SECONDS:  #optional. Default is 0 (disabled). This is how often a status update will be requested.
 LOG_LEVEL:              #optional. Default is info. Severity level for log output. Possible values: debug, info, warn, error.
+SMTP_SERVER_HOST:       #optional. Default is localhost. Email server hostname / IP.
+SMTP_SERVER_PORT:       #optional. Default is 25. Email server port.
 ```
-* Special note about STATUS_UPDATE_SECONDS. This function is not needed now. Just setup plugs to send info every 30s in Logging section of plug GUI. Default is 300s.
+* Special note about **STATUS_UPDATE_SECONDS**. This function is not needed now. Just setup plugs to send info every 30s in Logging section of plug GUI. Default is 300s.
 ```
 go build -o tasmota-alerter ./main
 cp systemd/tasmota-alerter.service /etc/systemd/system/

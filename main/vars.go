@@ -9,9 +9,9 @@ import (
 )
 
 type vars struct {
-	mqttHost, mqttUsername, mqttPassword, mqttClientId string
-	mqttPort, statusUpdateSeconds                      int
-	mqttTopics                                         []string
+	mqttHost, mqttUsername, mqttPassword, mqttClientId, smtpServer string
+	mqttPort, statusUpdateSeconds                                  int
+	mqttTopics                                                     []string
 }
 
 func ReadEnv() (*vars, error) {
@@ -31,6 +31,10 @@ func ReadEnv() (*vars, error) {
 		return nil, fmt.Errorf("can't parse provided status update interval: %s", err)
 	}
 	v.statusUpdateSeconds = statusUpdateSeconds
+
+	smtpServerHost := orDefault(os.Getenv("SMTP_SERVER_HOST"), "localhost")
+	smtpServerPort := orDefault(os.Getenv("SMTP_SERVER_PORT"), "25")
+	v.smtpServer = strings.Join([]string{smtpServerHost, smtpServerPort}, ":")
 
 	logLevelStr := orDefault(os.Getenv("LOG_LEVEL"), "info")
 	var logLevel slog.Level

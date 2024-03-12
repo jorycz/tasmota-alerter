@@ -24,15 +24,17 @@ type Processor struct {
 	mqttClient          *mqttclient.MqttClient
 	statusUpdateSeconds int
 	jsonParser          *parser.JSONParser
-	ruleEngine          *ruleengine.Rules
+	ruleEngineRules     *ruleengine.Rules
 }
 
 var (
 	firedAlertStorage Alerts
+	smtpDestination   string
 )
 
-func NewProcessor(mqttClient *mqttclient.MqttClient, statusUpdateSeconds int) *Processor {
+func NewProcessor(mqttClient *mqttclient.MqttClient, statusUpdateSeconds int, smtpServer string) *Processor {
 	firedAlertStorage = NewAlerts()
+	smtpDestination = smtpServer
 	return &Processor{map[string]any{}, &sync.Mutex{}, mqttClient, statusUpdateSeconds, &parser.JSONParser{}, ruleengine.NewRules()}
 }
 
@@ -55,7 +57,6 @@ func (p *Processor) Subscribe(mqttListenTopics []string) error {
 	return nil
 }
 
-
 func (p *Processor) messageProcessor(_ mqtt.Client, m mqtt.Message) {
 	slog.Debug("MQTT Message arrived", "topic", m.Topic(), "payload", m.Payload())
 
@@ -71,7 +72,7 @@ func (p *Processor) messageProcessor(_ mqtt.Client, m mqtt.Message) {
 		if len(topicParts) > 2 {
 			// Topic is 3-parts like: tele/plug_washing-machine/SENSOR
 			deviceTopic := topicParts[1]
-			monitoringRulesForDevice := p.ruleEngine.MonitoringRules[deviceTopic]
+			monitoringRulesForDevice := p.ruleEngineRules.MonitoringRules[deviceTopic]
 			if len(monitoringRulesForDevice) > 0 {
 				// Any monitoring rules found for this device
 				p.compareRulesWithPayload(topicParts, monitoringRulesForDevice, m.Payload())
@@ -162,10 +163,9 @@ func lastJsonPathComponentKeyName(jsonPath string) string {
 	return ""
 }
 
-
 func notifyMonitoredEventArrived(recipients string, emailBody string) {
 	if len(recipients) > 0 {
-		email.SendMessageTo(recipients, emailBody)
+		email.SendMessage(smtpDestination, recipients, emailBody)
 	}
 }
 
@@ -177,7 +177,7 @@ func notifyMonitoredValueArrived(device string, deviceValue string, rule ruleeng
 		if len(rule.MessageRuleActive) > 0 && rule.MessageRuleActive != ruleNotificationSytemTag {
 			emailBody = rule.MessageRuleActive
 		}
-		email.SendMessageTo(rule.Recipients, emailBody)
+		email.SendMessage(smtpDestination, rule.Recipients, emailBody)
 	}
 }
 
@@ -218,7 +218,7 @@ func removeAlertIfNotifiedBefore(device string, deviceValue string, rule ruleeng
 						if rule.MessageRuleInActive != ruleNotificationSytemTag {
 							emailBody = rule.MessageRuleInActive
 						}
-						email.SendMessageTo(rule.Recipients, emailBody)
+						email.SendMessage(smtpDestination, rule.Recipients, emailBody)
 					}
 				}
 			}
@@ -229,7 +229,6 @@ func removeAlertIfNotifiedBefore(device string, deviceValue string, rule ruleeng
 func arrayWithDeletedElementAtIndex(arr []Alert, index int) []Alert {
 	return append(arr[:index], arr[index+1:]...)
 }
-
 
 func (p *Processor) scheduleStatusCommand(topic string) {
 	if strings.HasPrefix(topic, "tele/") && strings.HasSuffix(topic, "/STATE") {
