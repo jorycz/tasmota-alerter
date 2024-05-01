@@ -51,6 +51,8 @@ func osSignalReceived(sig os.Signal) {
 		processor.StoreFiredAlerts()
 		os.Exit(0)
 	case syscall.SIGHUP, syscall.SIGUSR1:
+		// Dump current alerts to log
+		processor.DumpFiredAlerts()
 		// Reload rules: kill -HUP $(pidof tasmota-alerter)
 		processor.RefreshAlertRules()
 	}

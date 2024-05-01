@@ -46,6 +46,10 @@ func StoreFiredAlerts() {
 	firedAlertStorage.StoreAlerts()
 }
 
+func DumpFiredAlerts() {
+	firedAlertStorage.DumpAlerts()
+}
+
 func (p *Processor) Subscribe(mqttListenTopics []string) error {
 	for _, topic := range mqttListenTopics {
 		if err := p.mqttClient.Subscribe(topic, p.messageProcessor); err != nil {
@@ -182,23 +186,48 @@ func notifyMonitoredValueArrived(device string, deviceValue string, rule ruleeng
 }
 
 func isRuleForThisDeviceAlreadyAlerted(device string, rule ruleengine.Rule) bool {
+
 	storedAlerts := firedAlertStorage.FiredAlerts[device]
-	for _, alert := range storedAlerts {
+	for idx, alert := range storedAlerts {
 		if len(alert.AlertJsonPathOrEventTag) > 0 && len(alert.AlertMonitoredActionAndValue) > 0 {
 			if alert.AlertJsonPathOrEventTag == rule.JsonPathOrEventTag && alert.AlertMonitoredActionAndValue == rule.CompareValue && rule.Recipients == alert.Recipients {
-				slog.Debug("ALERT - Already notified, ignoring ...", "device", device, "alert", alert)
-				return true
+
+				if alert.IgnoreCount > 0 {
+					alert.IgnoreCount -= 1
+					// Update alert
+					firedAlertStorage.FiredAlerts[device] = arrayWithDeletedElementAtIndex(storedAlerts, idx)
+					firedAlertStorage.FiredAlerts[device] = append(firedAlertStorage.FiredAlerts[device], alert)
+					if alert.IgnoreCount == 0 {
+						slog.Debug("ALERT - Ignore count reached ZERO, alerting ...", "device", device, "alert", alert)
+						return false
+					}
+					// Ignore count is NOT ZERO yet
+					slog.Debug("ALERT - Ignore count NOT ZERO yet, ignoring ...", "device", device, "alert", alert)
+					return true
+				} else {
+					// Notified already
+					slog.Debug("ALERT - Already notified, ignoring ...", "device", device, "alert", alert)
+					return true
+				}
 			}
 		}
 	}
 
 	newAlert := Alert{}
+	newAlert.IgnoreCount = rule.IgnoreOccurrences
 	newAlert.AlertJsonPathOrEventTag = rule.JsonPathOrEventTag
 	newAlert.AlertMonitoredActionAndValue = rule.CompareValue
 	newAlert.Recipients = rule.Recipients
 	firedAlertStorage.FiredAlerts[device] = append(firedAlertStorage.FiredAlerts[device], newAlert)
-	slog.Debug("ALERT - New", "device", device, "alert", newAlert)
-	return false
+
+	if newAlert.IgnoreCount == 0 {
+		slog.Debug("ALERT - NEW. Rule ignore count is ZERO, alerting ...", "device", device, "alert", newAlert)
+		return false
+	} else {
+		// Ignore alerting now, fake that it has been alerted and take care about counter & alerting next time
+		slog.Debug("ALERT - NEW. Ignore counter active, ignoring ...", "device", device, "alert", newAlert)
+		return true
+	}
 }
 
 func removeAlertIfNotifiedBefore(device string, deviceValue string, rule ruleengine.Rule) {

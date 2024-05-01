@@ -2,6 +2,7 @@ package ruleengine
 
 import (
 	"log/slog"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -13,6 +14,7 @@ var (
 )
 
 type Rule struct {
+	IgnoreOccurrences	int64
 	JsonPathOrEventTag  string
 	CompareValue        string
 	Recipients          string
@@ -57,21 +59,29 @@ func createUniversalRuleSet(ruleLines []string) {
 	for _, line := range ruleLines {
 		slog.Debug("Loading monitoring rule.", "data", line)
 		parsed := strings.Split(line, ":::")
-		if len(parsed) > 2 {
+		if len(parsed) > 3 {
 
-			device := strings.Split(line, ":::")[0]
+			ignoreCount, err := strconv.ParseInt(strings.Split(line, ":::")[0], 0, 64)
+			if err != nil {
+				slog.Error("Can not parse rule ignore count value. Must be first element in rule file!", "rule_line", line)
+				continue
+			}
+
+			device := strings.Split(line, ":::")[1]
 
 			r := Rule{}
-			r.JsonPathOrEventTag = strings.Split(line, ":::")[1]
-			r.CompareValue = strings.Split(line, ":::")[2]
-			if len(parsed) > 3 {
-				r.Recipients = strings.Split(line, ":::")[3]
-			}
+			r.IgnoreOccurrences = ignoreCount
+			r.JsonPathOrEventTag = strings.Split(line, ":::")[2]
+			r.CompareValue = strings.Split(line, ":::")[3]
+
 			if len(parsed) > 4 {
-				r.MessageRuleActive = strings.Split(line, ":::")[4]
+				r.Recipients = strings.Split(line, ":::")[4]
 			}
 			if len(parsed) > 5 {
-				r.MessageRuleInActive = strings.Split(line, ":::")[5]
+				r.MessageRuleActive = strings.Split(line, ":::")[5]
+			}
+			if len(parsed) > 6 {
+				r.MessageRuleInActive = strings.Split(line, ":::")[6]
 			}
 			_ = rulesProcessed()
 			monitoringRules[device] = append(monitoringRules[device], r)

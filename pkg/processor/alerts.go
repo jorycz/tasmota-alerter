@@ -9,6 +9,7 @@ import (
 const firedAlertLastStateStorage = "storage/firedAlerts.json"
 
 type Alert struct {
+	IgnoreCount                  int64
 	AlertJsonPathOrEventTag      string
 	AlertMonitoredActionAndValue string
 	Recipients                   string
@@ -52,6 +53,15 @@ func (alerts Alerts) StoreAlerts() {
 		slog.Error("Error writing JSON to file when storing fired alerts:", err)
 		return
 	}
+}
+
+func (alerts Alerts) DumpAlerts() {
+	jsonData, err := json.Marshal(alerts)
+	if err != nil {
+		slog.Error("Error encoding JSON when storing fired alerts:", err)
+		return
+	}
+	slog.Info("Dumping already fired alerts.", "ALERTS", jsonData)
 }
 
 func readAlerts() Alerts {
