@@ -5,6 +5,7 @@
 
 /tasmota-alerter
 /_dev_settings
+**/firedAlerts.json
 **/my_*
 
 # User-specific files
