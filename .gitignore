@@ -5,7 +5,6 @@
 
 /tasmota-alerter
 /_dev_settings
-/storage/*
 **/my_*
 
 # User-specific files
