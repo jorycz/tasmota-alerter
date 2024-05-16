@@ -11,9 +11,9 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 
 	"github.com/jorycz/sp-json"
-	"github.com/jorycz/tasmota-alerter/pkg/email"
 	"github.com/jorycz/tasmota-alerter/pkg/mqttclient"
 	"github.com/jorycz/tasmota-alerter/pkg/ruleengine"
+	"github.com/jorycz/tasmota-alerter/pkg/notificationengine"
 )
 
 const ruleNotificationSytemTag = "__SYSTEM__"
@@ -29,12 +29,11 @@ type Processor struct {
 
 var (
 	firedAlertStorage Alerts
-	smtpDestination   string
 )
 
 func NewProcessor(mqttClient *mqttclient.MqttClient, statusUpdateSeconds int, smtpServer string) *Processor {
 	firedAlertStorage = NewAlerts()
-	smtpDestination = smtpServer
+	notificationengine.SetupChannels(smtpServer)
 	return &Processor{map[string]any{}, &sync.Mutex{}, mqttClient, statusUpdateSeconds, &parser.JSONParser{}, ruleengine.NewRules()}
 }
 
@@ -169,7 +168,7 @@ func lastJsonPathComponentKeyName(jsonPath string) string {
 
 func notifyMonitoredEventArrived(recipients string, emailBody string) {
 	if len(recipients) > 0 {
-		email.SendMessage(smtpDestination, recipients, emailBody)
+		notificationengine.NotifyChannels(recipients, emailBody)
 	}
 }
 
@@ -181,7 +180,7 @@ func notifyMonitoredValueArrived(device string, deviceValue string, rule ruleeng
 		if len(rule.MessageRuleActive) > 0 && rule.MessageRuleActive != ruleNotificationSytemTag {
 			emailBody = rule.MessageRuleActive
 		}
-		email.SendMessage(smtpDestination, rule.Recipients, emailBody)
+		notificationengine.NotifyChannels(rule.Recipients, emailBody)
 	}
 }
 
@@ -247,7 +246,7 @@ func removeAlertIfNotifiedBefore(device string, deviceValue string, rule ruleeng
 						if rule.MessageRuleInActive != ruleNotificationSytemTag {
 							emailBody = rule.MessageRuleInActive
 						}
-						email.SendMessage(smtpDestination, rule.Recipients, emailBody)
+						notificationengine.NotifyChannels(rule.Recipients, emailBody)
 					}
 				}
 			}

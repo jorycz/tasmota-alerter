@@ -1,1 +1,1 @@
-{"FiredAlerts":{"plug-pracka":[]}}
+{"FiredAlerts":{"plug-pracka":[{"IgnoreCount":0,"AlertJsonPathOrEventTag":"ENERGY--\u003ePower","AlertMonitoredActionAndValue":"\u003c3","Recipients":"EMAIL_TEST"},{"IgnoreCount":0,"AlertJsonPathOrEventTag":"ENERGY--\u003ePower","AlertMonitoredActionAndValue":"\u003c3","Recipients":"EMAIL_JOSEF,TELEGRAM_CHANNEL"}]}}

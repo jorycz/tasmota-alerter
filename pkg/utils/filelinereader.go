@@ -1,4 +1,4 @@
-package ruleengine
+package utils
 
 import (
 	"bufio"
@@ -11,23 +11,22 @@ import (
 )
 
 
-func readRuleConfFiles() ([]string, error) {
-
-	rulesFolder := "rules"
+func ReadFilesWithSuffix(fileFolder string, fileMask string) ([]string, error) {
 	var lines []string
 
-	// Read all .conf files in rules folder
-	err := filepath.Walk(rulesFolder, func(path string, info os.FileInfo, err error) error {
-        slog.Debug("DEBUG", "Reading rule file", info.Name())
+	// Read all files with suffix in a specified folder
+	err := filepath.Walk(fileFolder, func(path string, info os.FileInfo, err error) error {
+        slog.Debug("Reading", "file", info.Name())
 		if err != nil {
-            slog.Debug("Error when reading rule file", err)
+            slog.Debug("Error when reading file", err)
 			return err
 		}
 		if info.IsDir() {
             slog.Debug("Ignoring folder", err)
 			return nil
 		}
-		if strings.HasSuffix(info.Name(), ".conf") {
+
+		if strings.HasSuffix(info.Name(), fileMask) {
 			file, err := os.Open(path)
 			if err != nil {
 				return err
@@ -41,7 +40,7 @@ func readRuleConfFiles() ([]string, error) {
 				if !strings.HasPrefix(line, "#") && len(strings.TrimSpace(line)) > 0 {
 					lines = append(lines, line)
 				} else {
-                    slog.Debug("RULE line ignored", "line", line)
+                    slog.Debug("File line ignored", "line", line)
                 }
 			}
 			// Check for errors during scanning

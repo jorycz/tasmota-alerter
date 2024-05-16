@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/jorycz/tasmota-alerter/pkg/utils"
 )
 
 var (
@@ -40,7 +42,7 @@ func RefreshRules() {
 
 
 func readRuleFiles() {
-	ruleFilesLines, err := readRuleConfFiles()
+	ruleFilesLines, err := utils.ReadFilesWithSuffix("rules", ".conf")
 	if err != nil {
 		slog.Error("Error when reading RULE FILES", err)
 	}
@@ -83,8 +85,8 @@ func createUniversalRuleSet(ruleLines []string) {
 			if len(parsed) > 6 {
 				r.MessageRuleInActive = strings.Split(line, ":::")[6]
 			}
-			_ = rulesProcessed()
 			monitoringRules[device] = append(monitoringRules[device], r)
+			_ = rulesProcessed()
 		} else {
 			slog.Error("Can not parse rule!", "rule_line", line)
 		}

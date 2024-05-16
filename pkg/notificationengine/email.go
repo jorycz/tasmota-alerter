@@ -1,4 +1,4 @@
-package email
+package notificationengine
 
 import (
 	"log/slog"
@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-func SendMessage(smtpDestination, recpts, body string) {
+func sendEmailMessage(smtpDestination string, recipients []string, body string) {
 
-	recipients := strings.Split(recpts, ",")
+	slog.Debug("EMAIL", "to", recipients, "message", body)
 
 	if len(recipients) > 0 {
 

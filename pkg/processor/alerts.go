@@ -25,7 +25,7 @@ func NewAlerts() Alerts {
 	if len(alerts.FiredAlerts) < 1 {
 		alerts.FiredAlerts = make(map[string][]Alert)
 	} else {
-		slog.Info("Previously fired alerts restored.", "file", firedAlertLastStateStorage)
+		slog.Info("Previously fired alerts loaded.", "file", firedAlertLastStateStorage)
 	}
 
 	slog.Debug("NewAlerts", "alerts", alerts)
