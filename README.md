@@ -27,7 +27,7 @@ LOG_LEVEL:              #optional. Default is info. Severity level for log outpu
 SMTP_SERVER_HOST:       #optional. Default is localhost. Email server hostname / IP.
 SMTP_SERVER_PORT:       #optional. Default is 25. Email server port.
 ```
-* Special note about **STATUS_UPDATE_SECONDS**. This function is not needed now. Just setup plugs to send info every 30s in Logging section of plug GUI. Default is 300s.
+* Special note about **STATUS_UPDATE_SECONDS**. This function is not needed by default. You can setup plugs to send log every 30s in Logging section of plug GUI. Default is 300s (5 minutes).
 ```
 go build -o tasmota-alerter ./main
 cp systemd/tasmota-alerter.service /etc/systemd/system/
@@ -36,9 +36,11 @@ systemctl enable tasmota-alerter.service
 systemctl start tasmota-alerter.service
 ```
 
-# Alerting channels
+# Setup alerting channels
 * E-mail
-* Telegram (TODO)
+* Telegram
+
+Check **notifications/** folder. There are example *.conf files. You can make as many files as you wish or just one. Tasmota-alerter reads all files ending with .conf suffix from this folder.
 
 # Setup monitoring rules
-Check **rules/** folder. There are 2 files (you can make as many files as you wish) by default with help and examples how to set rules. One file is prepared for "events", like when someone change state of plug (push ON/OFF button). Another file is prepared for "values" monitoring.
+Check **rules/** folder. There are example *.conf files. You can make as many files as you wish or just one. Tasmota-alerter reads all files ending with .conf suffix from this folder. One file is prepared for "events", like when someone change state of plug (push ON/OFF button). Another file is prepared for "values" monitoring.

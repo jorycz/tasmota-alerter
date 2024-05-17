@@ -45,8 +45,8 @@ func sendTelegramMessage(botToken, chatId, message string) {
 	}
 
 	if httpStatusCode > 0 && httpStatusCode < 400 {
-		slog.Info("TELEGRAM", "response", httpBodyFinal)
+		slog.Debug("TELEGRAM", "response", httpBodyFinal)
 	} else {
-		slog.Info("TELEGRAM", "response", httpBodyFinal)
+		slog.Error("TELEGRAM", "response", httpBodyFinal)
 	}
 }
